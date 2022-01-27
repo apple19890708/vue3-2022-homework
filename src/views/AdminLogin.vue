@@ -52,7 +52,7 @@
 
 <script>
 export default {
-  name: "BackEndLogin",
+  name: "AdminLogin",
   data() {
     return {
       user: {
@@ -70,7 +70,8 @@ export default {
           this.user
         );
         const { token, expired } = res.data;
-        document.cookie = `hexToken=${token};expires=${new Date(expired)};`;
+        document.cookie = `hexToken=${token};expires=${new Date(expired)};`; // 取得token存在cookie 並限定有效期限
+        localStorage.setItem('session', JSON.stringify({ isLogin: true }));
         this.$router.push("/products");
       } catch (err) {
         console.log(err);

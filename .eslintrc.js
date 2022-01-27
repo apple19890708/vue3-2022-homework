@@ -14,5 +14,6 @@ module.exports = {
     semi: 'off',
     'comma-dangle': 'off',
     'newline-per-chained-call': 'off',
+    'max-len': [1, 120],
   },
 }
