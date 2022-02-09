@@ -35,7 +35,7 @@
                 <img class="img-fluid" :src="localInfo.imageUrl" />
               </div>
               <div class="mb-1">多圖新增</div>
-              <div v-if="Array.isArray(localInfo.imagesUrl)">
+              <div v-if="Array.isArray(localInfo.imagesUrl)"> <!-- 判斷是否有內容 -->
                 <div
                   class="mb-1"
                   v-for="(image, key) in localInfo.imagesUrl"
@@ -180,6 +180,8 @@
             </div>
           </div>
         </div>
+        <!-- {{user.name}}
+        {{user.id}} -->
         <div class="modal-footer">
           <button
             type="button"
@@ -270,6 +272,7 @@ export default {
       modal: "",
     };
   },
+  inject: ['user'],
   watch: {
     tempProduct() {
       this.localInfo = JSON.parse(JSON.stringify(this.tempProduct));

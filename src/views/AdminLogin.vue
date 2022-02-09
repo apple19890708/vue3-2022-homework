@@ -13,8 +13,12 @@
               required
               autofocus
               v-model="user.username"
+              @change="() => {isUsernameError = false; isInvalidEmail = false}"
+              :class="{'isErrorBorder': isUsernameError || isInvalidEmail}"
             />
             <label for="username">Email address</label>
+            <div v-if="isUsernameError" :class="{'isError': isUsernameError}">信箱未註冊</div>
+            <div v-if="isInvalidEmail" :class="{'isError': isInvalidEmail}">信箱格式不正確</div>
           </div>
           <div class="form-floating">
             <input
@@ -24,8 +28,11 @@
               placeholder="Password"
               required
               v-model="user.password"
+              @change="() => {isPassword = false}"
+              :class="{'isErrorBorder': isPassword}"
             />
             <label for="password">Password</label>
+            <div v-if="isPassword" :class="{'isError': isPassword}">密碼錯誤</div>
           </div>
           <button
             class="btn btn-lg btn-primary w-100 mt-3"
@@ -48,6 +55,17 @@
   height: 100vh;
   justify-content: center;
 }
+.isError {
+  color: red;
+}
+.isErrorBorder {
+  border-color: #f70808;
+  &:focus {
+    border-color: #f70808;
+    // box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
+    box-shadow: 0 0 0 0.25rem red;
+  }
+}
 </style>
 
 <script>
@@ -60,6 +78,9 @@ export default {
         password: "",
       },
       token: "",
+      isUsernameError: false,
+      isInvalidEmail: false,
+      isPassword: false,
     };
   },
   methods: {
@@ -69,10 +90,26 @@ export default {
           `${process.env.VUE_APP_API}/v2/admin/signin`,
           this.user
         );
-        const { token, expired } = res.data;
-        document.cookie = `hexToken=${token};expires=${new Date(expired)};`; // 取得token存在cookie 並限定有效期限
-        localStorage.setItem('session', JSON.stringify({ isLogin: true }));
-        this.$router.push("/products");
+        const { token, expired, success } = res.data;
+        if (success) {
+          document.cookie = `hexToken=${token};expires=${new Date(expired)};`; // 取得token存在cookie 並限定有效期限
+          localStorage.setItem("session", JSON.stringify({ isLogin: true }));
+          this.$router.push("/products");
+        } else {
+          console.log("err", res.data);
+          if (res.data.error.code === "auth/user-not-found") {
+            this.isUsernameError = true;
+            this.user.username = '';
+            this.user.password = '';
+          } else if (res.data.error.code === "auth/invalid-email") {
+            this.isInvalidEmail = true;
+            this.user.username = '';
+            this.user.password = '';
+          } else {
+            this.isPassword = true;
+            this.user.password = '';
+          }
+        }
       } catch (err) {
         console.log(err);
       }

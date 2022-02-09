@@ -7,9 +7,16 @@
       建立新的產品
     </button>
   </div>
+  <div>
+    <!-- {{ msg }}
+    <Input v-model:fName="msg"></Input> -->
+  </div>
   <div class="products-containers">
-    <div class="containers">
-      <table class="table mt-4 table-light" style="text-align: initial;">
+    <div class="containers table-responsive">
+      <table
+        class="table table-bordered mt-4 table-light align-middle"
+        style="text-align: initial"
+      >
         <thead>
           <tr>
             <th width="120">產品名稱</th>
@@ -70,7 +77,11 @@
             <div class="card mb-3">
               <div
                 v-if="tempProduct.imageUrl"
-                :style="{backgroundImage: `url(${tempProduct.imageUrl})`, height: '300px', backgroundSize: 'cover'}"
+                :style="{
+                  backgroundImage: `url(${tempProduct.imageUrl})`,
+                  height: '300px',
+                  backgroundSize: 'cover',
+                }"
                 class="card-img-top primary-image"
                 height="196"
                 alt="主圖"
@@ -118,22 +129,53 @@
       </template>
       <p v-else class="text-secondary">請選擇一個商品查看</p>
     </div>
-    <ProductDialog
+    <Teleport to="body">
+      <ProductDialog
       ref="productModalOutside"
       :temp-product="tempProduct"
       @update-product="(val) => updateProduct(val)"
       :is-new-product="isNewProduct"
-    >
-    </ProductDialog>
-    <DelProductModal
-      ref="delProductModalOutside"
-      :temp-product="tempProduct"
-      @delete-product="deleteProduct"
-    ></DelProductModal>
+      >
+      </ProductDialog>
+    </Teleport>
+    <Teleport to="body">
+      <DelProductModal
+        ref="delProductModalOutside"
+        :temp-product="tempProduct"
+        @delete-product="deleteProduct"
+      ></DelProductModal>
+    </Teleport>
   </div>
 </template>
 
 <style lang="scss">
+.table-bordered > :not(caption) > * {
+  border-width: 0;
+}
+.table > :not(:first-child) {
+  border-top: 1px solid currentColor;
+}
+table {
+  border: 1px solid black;
+  thead {
+    border: 1px solid;
+    tr {
+      border: 1px solid black;
+      th {
+        background-color: lightgray !important;
+        border: 0;
+      }
+    }
+  }
+  tbody {
+    border: 1px solid;
+    tr {
+      td {
+        border: 0;
+      }
+    }
+  }
+}
 .switch {
   position: relative;
   display: inline-block;
@@ -189,7 +231,7 @@ input:checked + .slider:before {
   justify-content: space-between;
   width: 90%;
   margin: auto;
-  background-color: #F8F8F8;
+  background-color: #f8f8f8;
 }
 .containers {
   display: flex;
@@ -203,7 +245,8 @@ input:checked + .slider:before {
 <script>
 import ProductDialog from "../components/ProductDialog.vue";
 import DelProductModal from "../components/DelProductModal.vue";
-import { numberWithCommas } from '../utils';
+// import Input from "../components/Input.vue";
+import { numberWithCommas } from "../utils";
 
 export default {
   name: "Products",
@@ -214,11 +257,21 @@ export default {
         imagesUrl: [],
       },
       isNewProduct: false,
+      msg: "66666666",
     };
+  },
+  provide() {
+    return {
+      user: {
+        name: 'Asa',
+        id: '67'
+      }
+    }
   },
   components: {
     ProductDialog,
     DelProductModal,
+    // Input,
   },
   methods: {
     async Logout() {
@@ -246,7 +299,7 @@ export default {
       try {
         const res = await this.axios.get(url);
         const originPlan = res.data.products; // 如果不先const 直接給this.products 再forEach會出現修改的值沒用
-        console.log('originPlan', originPlan)
+        console.log("originPlan", originPlan);
         this.products = originPlan.map((item) => ({
           category: item.category,
           content: item.content,
@@ -259,8 +312,8 @@ export default {
           unit: item.unit,
           originalPoints: `$${numberWithCommas(item.origin_price)}`,
           discountPoints: `$${numberWithCommas(item.price)}`,
-        }))
-        console.log('this.products', this.products)
+        }));
+        console.log("this.products", this.products);
       } catch (err) {
         console.log(err);
       }

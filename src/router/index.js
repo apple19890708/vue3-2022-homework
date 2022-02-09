@@ -19,10 +19,17 @@ const routes = [
     component: () => import('../views/AdminLogin.vue'),
   },
   {
-    path: '/products',
-    name: 'Products',
+    path: '/',
+    component: () => import('../layouts/CommonLayout.vue'),
     meta: { requiresAuth: true },
-    component: () => import('../views/Products.vue'),
+    children: [
+      {
+        path: '/products',
+        name: 'Products',
+        meta: { requiresAuth: true },
+        component: () => import('../views/Products.vue'),
+      },
+    ],
   },
 ]
 
@@ -32,18 +39,18 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const session = JSON.parse(localStorage.getItem('session'));
+  const session = JSON.parse(localStorage.getItem('session'))
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (session && session.isLogin && to.fullPath !== '/admin-login') {
-      next();
+      next()
     } else {
-      next({ name: 'AdminLogin' });
+      next({ name: 'AdminLogin' })
     }
   } else if (session && session.isLogin && to.fullPath === '/admin-login') {
-    next({ name: 'Products' });
+    next({ name: 'Products' })
   } else {
-    next();
+    next()
   }
-});
+})
 
 export default router
