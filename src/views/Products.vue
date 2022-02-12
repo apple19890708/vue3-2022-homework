@@ -11,7 +11,7 @@
     <!-- {{ msg }}
     <Input v-model:fName="msg"></Input> -->
   </div>
-  <div class="products-containers">
+  <div class="products-containers" ref="products">
     <div class="containers table-responsive">
       <table
         class="table table-bordered mt-4 table-light align-middle"
@@ -23,19 +23,35 @@
             <th width="120">原價</th>
             <th width="120">售價</th>
             <th width="150">是否啟用</th>
+            <th width="120">評價</th>
             <th width="120">操作</th>
           </tr>
         </thead>
         <tbody id="productList">
           <tr v-for="product in products" :key="product.id">
             <td>{{ product.title }}</td>
-            <td width="120">{{ product.originalPoints }}</td>
-            <td width="120">{{ product.discountPoints }}</td>
+            <td width="120">
+              ${{ `${numberWithCommas(product.origin_price)}` }}
+            </td>
+            <td width="120">${{ `${numberWithCommas(product.price)}` }}</td>
             <td>
               <label class="switch">
                 <input type="checkbox" :checked="product.is_enabled" disabled />
                 <span class="slider round"></span>
               </label>
+            </td>
+            <td>
+              <span>
+                <i
+                  v-for="(n, idx) in maxStars"
+                  :key="idx"
+                  :class="getStars(product.start, idx)"
+                  :style="getStarsColor(product.start, idx)"
+                  @click="changNum(n, oneidx)"
+                >
+                </i>
+              </span>
+              {{ product.start }}
             </td>
             <td width="120">
               <div class="btn-group">
@@ -68,6 +84,10 @@
       <p>
         目前有 <span id="productCount">{{ products.length }}</span> 項產品
       </p>
+      <Pagenation
+        :pages="pagination"
+        @get-product="getProductsData"
+      ></Pagenation>
     </div>
     <div class="col-lg-3">
       <h2>單一產品細節</h2>
@@ -103,7 +123,7 @@
                 <p class="card-text">商品描述：{{ tempProduct.description }}</p>
                 <p class="card-text">商品內容：{{ tempProduct.content }}</p>
                 <div class="d-flex">
-                  <p class="card-text me-2">{{ tempProduct.price }}</p>
+                  <p class="card-text me-2">{{ tempProduct.origin_price }}</p>
                   <p class="card-text text-secondary">
                     <del>{{ tempProduct.origin_price }}</del>
                   </p>
@@ -131,10 +151,10 @@
     </div>
     <Teleport to="body">
       <ProductDialog
-      ref="productModalOutside"
-      :temp-product="tempProduct"
-      @update-product="(val) => updateProduct(val)"
-      :is-new-product="isNewProduct"
+        ref="productModalOutside"
+        :temp-product="tempProduct"
+        @update-product="(val) => updateProduct(val)"
+        :is-new-product="isNewProduct"
       >
       </ProductDialog>
     </Teleport>
@@ -246,7 +266,8 @@ input:checked + .slider:before {
 import ProductDialog from "../components/ProductDialog.vue";
 import DelProductModal from "../components/DelProductModal.vue";
 // import Input from "../components/Input.vue";
-import { numberWithCommas } from "../utils";
+// import { numberWithCommas } from "../utils";
+import Pagenation from "../components/Pagenation.vue";
 
 export default {
   name: "Products",
@@ -258,22 +279,44 @@ export default {
       },
       isNewProduct: false,
       msg: "66666666",
+      pagination: {},
+      maxStars: 6,
     };
   },
   provide() {
     return {
       user: {
-        name: 'Asa',
-        id: '67'
-      }
-    }
+        name: "Asa",
+        id: "67",
+      },
+    };
   },
   components: {
     ProductDialog,
     DelProductModal,
+    Pagenation,
     // Input,
   },
   methods: {
+    onCancel() {
+      console.log("User cancelled the loader.");
+    },
+    getStars(n, idx) {
+      return {
+        fa: true,
+        "fa-star-o": n <= idx,
+        "fa-star": n > idx,
+      };
+    },
+    getStarsColor(n, idx) {
+      return {
+        color: n <= idx ? "darkgray" : "orange",
+      };
+    },
+    changNum(n, oneidx) {
+      this.products[oneidx].start = n;
+      console.log(this.products);
+    },
     async Logout() {
       const res = await this.axios.post(`${process.env.VUE_APP_API}/v2/logout`);
       console.log("logout", res);
@@ -291,15 +334,18 @@ export default {
         }
       } catch (err) {
         console.log(err);
+        localStorage.setItem("session", JSON.stringify({ isLogin: false }));
         this.$router.push("/admin-login");
       }
     },
-    async getProductsData() {
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/products`;
+    async getProductsData(page = 1) {
+      // 利用query 帶入預設頁數
+      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/products/?page=${page}`;
       try {
         const res = await this.axios.get(url);
         const originPlan = res.data.products; // 如果不先const 直接給this.products 再forEach會出現修改的值沒用
-        console.log("originPlan", originPlan);
+        // console.log("originPlan", originPlan);
+        this.pagination = res.data.pagination;
         this.products = originPlan.map((item) => ({
           category: item.category,
           content: item.content,
@@ -310,8 +356,9 @@ export default {
           num: item.num,
           title: item.title,
           unit: item.unit,
-          originalPoints: `$${numberWithCommas(item.origin_price)}`,
-          discountPoints: `$${numberWithCommas(item.price)}`,
+          origin_price: item.origin_price,
+          price: item.price,
+          start: 0,
         }));
         console.log("this.products", this.products);
       } catch (err) {
@@ -352,8 +399,14 @@ export default {
         http = "put";
       }
       try {
+        const loader = this.$loading.show({
+          container: this.$refs.products,
+          canCancel: true,
+          onCancel: this.onCancel,
+        });
         const res = await this.axios[http](url, { data: item });
         if (res.data.success) {
+          loader.hide();
           this.getProductsData();
           this.$refs.productModalOutside.closeModal();
           this.tempProduct = { ...item };

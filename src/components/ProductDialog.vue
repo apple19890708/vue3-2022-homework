@@ -273,7 +273,7 @@ export default {
     };
   },
   inject: ['user'],
-  watch: {
+  watch: { // 進階使用:當父層資料改變時透過watch更新內部資料，如果放mounted，只有第一次會更新
     tempProduct() {
       this.localInfo = JSON.parse(JSON.stringify(this.tempProduct));
       console.log("this.localInfo", this.localInfo);
