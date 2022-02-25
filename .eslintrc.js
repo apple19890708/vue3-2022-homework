@@ -15,5 +15,7 @@ module.exports = {
     'comma-dangle': 'off',
     'newline-per-chained-call': 'off',
     'max-len': [1, 120],
+    "no-unused-vars": "off",
+    "import/prefer-default-export": "off",
   },
 }

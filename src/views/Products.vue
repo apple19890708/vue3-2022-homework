@@ -1,7 +1,4 @@
 <template>
-  <button type="button" class="btn btn-sm btn-primary" @click="Logout">
-    登出
-  </button>
   <div class="mt-4">
     <button class="btn btn-primary" @click="openModal('newProduct')">
       建立新的產品
@@ -42,16 +39,18 @@
             </td>
             <td>
               <span>
-                <i
-                  v-for="(n, idx) in maxStars"
-                  :key="idx"
-                  :class="getStars(product.start, idx)"
-                  :style="getStarsColor(product.start, idx)"
-                  @click="changNum(n, oneidx)"
-                >
-                </i>
+                <template v-for="(n, idx) in maxStars" :key="idx">
+                  <font-awesome-icon
+                    v-if="n > product.star"
+                    :icon="['far', 'star']"
+                  />
+                  <font-awesome-icon
+                    v-if="n <= product.star"
+                    :icon="['fas', 'star']"
+                  />
+                </template>
               </span>
-              {{ product.start }}
+              {{ product.star }}
             </td>
             <td width="120">
               <div class="btn-group">
@@ -192,6 +191,7 @@ table {
     tr {
       td {
         border: 0;
+        background-color: white !important;
       }
     }
   }
@@ -263,8 +263,10 @@ input:checked + .slider:before {
 </style>
 
 <script>
+import { mapGetters } from "vuex";
 import ProductDialog from "../components/ProductDialog.vue";
 import DelProductModal from "../components/DelProductModal.vue";
+import { aepAxios } from "../api/aepBaseApi";
 // import Input from "../components/Input.vue";
 // import { numberWithCommas } from "../utils";
 import Pagenation from "../components/Pagenation.vue";
@@ -297,33 +299,36 @@ export default {
     Pagenation,
     // Input,
   },
+  computed: {
+    ...mapGetters("commonModule", ["productsInfo"]),
+  },
+  watch: {
+    productsInfo() {
+      this.products = this.productsInfo.products;
+      const originPlan = this.productsInfo.products; // 如果不先const 直接給this.products 再forEach會出現修改的值沒用
+      console.log("originPlan", originPlan);
+      this.pagination = this.productsInfo.pagination;
+      console.log("pagination", this.pagination);
+      this.products = originPlan.map((item) => ({
+        category: item.category,
+        content: item.content,
+        description: item.description,
+        id: item.id,
+        imageUrl: item.imageUrl,
+        is_enabled: item.is_enabled,
+        num: item.num,
+        title: item.title,
+        unit: item.unit,
+        origin_price: item.origin_price,
+        price: item.price,
+        star: item.star || 0,
+      }));
+      console.log("this.products", this.products);
+    },
+  },
   methods: {
-    onCancel() {
-      console.log("User cancelled the loader.");
-    },
-    getStars(n, idx) {
-      return {
-        fa: true,
-        "fa-star-o": n <= idx,
-        "fa-star": n > idx,
-      };
-    },
-    getStarsColor(n, idx) {
-      return {
-        color: n <= idx ? "darkgray" : "orange",
-      };
-    },
-    changNum(n, oneidx) {
-      this.products[oneidx].start = n;
-      console.log(this.products);
-    },
-    async Logout() {
-      const res = await this.axios.post(`${process.env.VUE_APP_API}/v2/logout`);
-      console.log("logout", res);
-      if (res.data.success) {
-        localStorage.setItem("session", JSON.stringify({ isLogin: false }));
-        this.$router.push("/admin-login");
-      }
+    changeStars(n, pIdx) {
+      this.products[pIdx].star = n;
     },
     async checkAdmin() {
       const api = `${process.env.VUE_APP_API}v2/api/user/check`; // 檢查使用者登入狀態
@@ -339,28 +344,11 @@ export default {
       }
     },
     async getProductsData(page = 1) {
+      console.log("1232");
       // 利用query 帶入預設頁數
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/products/?page=${page}`;
+      // const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/products/?page=${page}`;
       try {
-        const res = await this.axios.get(url);
-        const originPlan = res.data.products; // 如果不先const 直接給this.products 再forEach會出現修改的值沒用
-        // console.log("originPlan", originPlan);
-        this.pagination = res.data.pagination;
-        this.products = originPlan.map((item) => ({
-          category: item.category,
-          content: item.content,
-          description: item.description,
-          id: item.id,
-          imageUrl: item.imageUrl,
-          is_enabled: item.is_enabled,
-          num: item.num,
-          title: item.title,
-          unit: item.unit,
-          origin_price: item.origin_price,
-          price: item.price,
-          start: 0,
-        }));
-        console.log("this.products", this.products);
+        await this.$store.dispatch("commonModule/getProduct", page);
       } catch (err) {
         console.log(err);
       }
@@ -372,7 +360,18 @@ export default {
       switch (newProduct) {
         case "newProduct":
           this.tempProduct = {
+            category: "",
+            content: "",
+            description: "",
+            id: "",
             imagesUrl: [],
+            is_enabled: "",
+            num: null,
+            title: "",
+            unit: "",
+            origin_price: null,
+            price: null,
+            star: 0,
           };
           this.isNewProduct = true;
           this.$refs.productModalOutside.openModal(); // 透過在父層掛ref使用子層的methods
@@ -402,7 +401,6 @@ export default {
         const loader = this.$loading.show({
           container: this.$refs.products,
           canCancel: true,
-          onCancel: this.onCancel,
         });
         const res = await this.axios[http](url, { data: item });
         if (res.data.success) {
@@ -437,6 +435,7 @@ export default {
       "$1"
     );
     this.axios.defaults.headers.common.Authorization = token; // 將token帶入header裡面
+    aepAxios.defaults.headers.common.Authorization = token; // 這是目前新版寫法
     this.checkAdmin();
   },
 };

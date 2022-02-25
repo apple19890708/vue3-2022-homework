@@ -11,12 +11,12 @@
 
 <style lang="scss" scoped>
 .Common-content {
-  height: calc(100vh - 64px);
+  height: auto;
   overflow-y: auto;
 }
 @media all and (max-width: 1260px) {
   .Common-content {
-    height: calc(100vh - 40px);
+    height: auto;
     overflow-y: auto;
   }
 }
@@ -26,7 +26,7 @@
 import NavBar from "../components/NavBar.vue";
 
 export default {
-  name: "CommonLayout",
+  name: "DashboardView",
   mounted() {},
   components: {
     NavBar,

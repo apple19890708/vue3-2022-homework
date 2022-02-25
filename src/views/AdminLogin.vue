@@ -94,7 +94,7 @@ export default {
         if (success) {
           document.cookie = `hexToken=${token};expires=${new Date(expired)};`; // 取得token存在cookie 並限定有效期限
           localStorage.setItem("session", JSON.stringify({ isLogin: true }));
-          this.$router.push("/products");
+          this.$router.push("/admin/products");
         } else {
           console.log("err", res.data);
           if (res.data.error.code === "auth/user-not-found") {

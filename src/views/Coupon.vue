@@ -1,9 +1,9 @@
 <template>
-  <div>hello 我是首頁</div>
+  <div>i am Coupon</div>
 </template>
 
 <script>
 export default {
-  name: "Home",
+  name: "Coupon",
 };
 </script>

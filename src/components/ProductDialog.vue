@@ -27,15 +27,17 @@
               <div class="form-group">
                 <label for="imageUrl">主要圖片</label>
                 <input
-                  type="text"
+                  type="file"
+                  name="file-to-upload"
                   class="form-control"
-                  v-model="localInfo.imageUrl"
+                  @change="updateImg"
                   placeholder="請輸入圖片連結"
                 />
                 <img class="img-fluid" :src="localInfo.imageUrl" />
               </div>
               <div class="mb-1">多圖新增</div>
-              <div v-if="Array.isArray(localInfo.imagesUrl)"> <!-- 判斷是否有內容 -->
+              <div v-if="Array.isArray(localInfo.imagesUrl)">
+                <!-- 判斷是否有內容 -->
                 <div
                   class="mb-1"
                   v-for="(image, key) in localInfo.imagesUrl"
@@ -177,6 +179,23 @@
                   <span class="slider round"></span>
                 </label>
               </div>
+              <div class="form-group">
+                <div>評價</div>
+                <label>
+                  <template v-for="(n, idx) in maxStars" :key="idx">
+                    <font-awesome-icon
+                      @click="changeStars(n)"
+                      v-if="n > localInfo.star"
+                      :icon="['far', 'star']"
+                    />
+                    <font-awesome-icon
+                      @click="changeStars(n)"
+                      v-if="n <= localInfo.star"
+                      :icon="['fas', 'star']"
+                    />
+                  </template>
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -270,10 +289,12 @@ export default {
     return {
       localInfo: {},
       modal: "",
+      maxStars: 6,
     };
   },
-  inject: ['user'],
-  watch: { // 進階使用:當父層資料改變時透過watch更新內部資料，如果放mounted，只有第一次會更新
+  inject: ["user"],
+  watch: {
+    // 進階使用:當父層資料改變時透過watch更新內部資料，如果放mounted，只有第一次會更新
     tempProduct() {
       this.localInfo = JSON.parse(JSON.stringify(this.tempProduct));
       console.log("this.localInfo", this.localInfo);
@@ -283,6 +304,9 @@ export default {
     this.modal = new Modal(this.$refs.productModal);
   },
   methods: {
+    changeStars(n) {
+      this.localInfo.star = n;
+    },
     createImages() {
       this.localInfo.imagesUrl = [];
       this.localInfo.imagesUrl.push("");
@@ -292,6 +316,20 @@ export default {
     },
     closeModal() {
       this.modal.hide();
+    },
+    async updateImg(val) {
+      const file = val.target.files[0];
+      console.log("val.target.files[0]", val.target.files[0]);
+      const formData = new FormData();
+      formData.append("file-to-upload", file);
+      const res = await this.axios.post(
+        `${process.env.VUE_APP_API}/v2/api/${process.env.VUE_APP_PATH}/admin/upload`,
+        formData
+      );
+      if (res.data.success) {
+        this.localInfo.imageUrl = res.data.imageUrl;
+        console.log("update success");
+      }
     },
   },
 };
