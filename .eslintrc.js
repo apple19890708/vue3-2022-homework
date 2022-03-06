@@ -17,5 +17,6 @@ module.exports = {
     'max-len': [1, 120],
     "no-unused-vars": "off",
     "import/prefer-default-export": "off",
+    'linebreak-style': ["off", "windows"]
   },
 }
