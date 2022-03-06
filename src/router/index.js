@@ -59,6 +59,13 @@ const routes = [
         meta: { requiresAuth: true },
         component: () => import('../views/Coupon.vue'),
       },
+      {
+        path: 'orders',
+        name: 'Orders',
+        default: true,
+        meta: { requiresAuth: true },
+        component: () => import('../views/Orders.vue'),
+      },
     ],
   },
   // 404頁面

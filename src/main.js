@@ -11,7 +11,8 @@ import 'vue-next-select/dist/index.min.css'
 import VueFlatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 import AllRules from '@vee-validate/rules'; // v-validate所有規則
-import { localize, setLocale, loadLocaleFromURL } from '@vee-validate/i18n'; // 導入多國語系
+import { localize, setLocale } from '@vee-validate/i18n'; // 導入多國語系
+import zhTW from '@vee-validate/i18n/dist/locale/zh_TW.json';
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -30,12 +31,12 @@ Object.keys(AllRules).forEach((rule) => { // v-validate引入所有規則
   defineRule(rule, AllRules[rule]);
 });
 
-loadLocaleFromURL('https://unpkg.com/@vee-validate/i18n@4.1.0/dist/locale/zh_TW.json');
-
 configure({
-  generateMessage: localize('zh_TW'),
-  validateOnInput: true,
+  generateMessage: localize({ zh_TW: zhTW }), // 載入繁體中文語系
+  validateOnInput: true, // 當輸入任何內容直接進行驗證
 });
+// 設定預設語系
+setLocale('zh_TW');
 
 createApp(App)
   .mixin({
@@ -51,9 +52,8 @@ createApp(App)
   .component('Form', Form)
   .component('ErrorMessage', ErrorMessage)
   .component('vue-select', VueNextSelect)
+  .component('Loading', VueLoading)
   .use(VueFlatPickr)
   .use(VueLoading)
   .use(VueAxios, axios)
   .mount('#app')
-
-setLocale('zh_TW')

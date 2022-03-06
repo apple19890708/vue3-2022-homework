@@ -131,7 +131,7 @@
               </div>
             </div>
           </div>
-          <template
+          <!-- <template
             v-for="(image, id) in tempProduct.imagesUrl"
             :key="`image-${id}`"
           >
@@ -143,7 +143,7 @@
                 class="images m-2"
               />
             </div>
-          </template>
+          </template> -->
         </div>
       </template>
       <p v-else class="text-secondary">請選擇一個商品查看</p>
@@ -267,8 +267,6 @@ import { mapGetters } from "vuex";
 import ProductDialog from "../components/ProductDialog.vue";
 import DelProductModal from "../components/DelProductModal.vue";
 import { aepAxios } from "../api/aepBaseApi";
-// import Input from "../components/Input.vue";
-// import { numberWithCommas } from "../utils";
 import Pagenation from "../components/Pagenation.vue";
 
 export default {
@@ -300,21 +298,22 @@ export default {
     // Input,
   },
   computed: {
-    ...mapGetters("commonModule", ["productsInfo"]),
+    ...mapGetters("commonModule", [
+      "productsInfo",
+    ]),
   },
   watch: {
     productsInfo() {
       this.products = this.productsInfo.products;
       const originPlan = this.productsInfo.products; // 如果不先const 直接給this.products 再forEach會出現修改的值沒用
-      console.log("originPlan", originPlan);
       this.pagination = this.productsInfo.pagination;
-      console.log("pagination", this.pagination);
       this.products = originPlan.map((item) => ({
         category: item.category,
         content: item.content,
         description: item.description,
         id: item.id,
         imageUrl: item.imageUrl,
+        imagesUrl: item.imagesUrl,
         is_enabled: item.is_enabled,
         num: item.num,
         title: item.title,
@@ -344,7 +343,6 @@ export default {
       }
     },
     async getProductsData(page = 1) {
-      console.log("1232");
       // 利用query 帶入預設頁數
       // const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/products/?page=${page}`;
       try {

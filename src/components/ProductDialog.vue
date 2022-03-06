@@ -1,7 +1,7 @@
 <template>
   <div
     id="productModal"
-    ref="productModal"
+    ref="modal"
     class="modal fade"
     tabindex="-1"
     aria-labelledby="productModalLabel"
@@ -270,10 +270,11 @@ input:checked + .slider:before {
 </style>
 
 <script>
-import { Modal } from "bootstrap";
+import modal from '@/utils/modal';
 
 export default {
   name: "ProductDialog",
+  mixins: [modal],
   props: {
     tempProduct: {
       type: Object,
@@ -301,7 +302,7 @@ export default {
     },
   },
   mounted() {
-    this.modal = new Modal(this.$refs.productModal);
+
   },
   methods: {
     changeStars(n) {
@@ -310,12 +311,6 @@ export default {
     createImages() {
       this.localInfo.imagesUrl = [];
       this.localInfo.imagesUrl.push("");
-    },
-    openModal() {
-      this.modal.show();
-    },
-    closeModal() {
-      this.modal.hide();
     },
     async updateImg(val) {
       const file = val.target.files[0];

@@ -1,7 +1,7 @@
 <template>
   <div
     id="delProductModal"
-    ref="delProductModal"
+    ref="modal"
     class="modal fade"
     tabindex="-1"
     aria-labelledby="delProductModalLabel"
@@ -50,10 +50,11 @@
 </style>
 
 <script>
-import { Modal } from "bootstrap";
+import modal from '@/utils/modal';
 
 export default {
   name: "DelProductModal",
+  mixins: [modal],
   props: {
     tempProduct: {
       type: Object,
@@ -68,15 +69,8 @@ export default {
     };
   },
   mounted() {
-    this.modal = new Modal(this.$refs.delProductModal);
   },
   methods: {
-    openModal() {
-      this.modal.show();
-    },
-    closeModal() {
-      this.modal.hide();
-    },
   },
 };
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light" :class="[showNavbar === true ? 'show-navbar' : 'hidden-navbar' ]">
     <div class="container-fluid">
       <router-link class="navbar-brand" to="/">音樂便利店</router-link>
       <button
@@ -34,11 +34,38 @@
   </nav>
 </template>
 
+<style lang="scss">
+  .show-navbar {
+    position: fixed;
+    width: 100vw;
+    top: 0;
+    z-index: 999;
+    box-shadow: 0 2px 15px rgba(71, 120, 120, 0.5);
+    transform: translate3d(0, 0, 0);
+    transition: 0.2s all ease-out;
+  }
+  .hidden-navbar {
+    position: fixed;
+    width: 100vw;
+    top: 0;
+    z-index: 999;
+    box-shadow: none;
+    transform: translate3d(0, -100%, 0);
+    transition: 0.2s all ease-out;
+  }
+</style>
+
 <script>
-// import emitter from '@/libs/emitter';
 import { mapGetters } from 'vuex'
 
 export default {
+  name: 'FrontNavbar',
+  props: {
+    showNavbar: {
+      type: Boolean,
+      default: true,
+    }
+  },
   data() {
     return {
       cartData: {
@@ -63,9 +90,6 @@ export default {
   },
   mounted() {
     this.getCart();
-    // emitter.on('get-cart', () => {
-    //   this.getCart();
-    // });
   },
 };
 </script>

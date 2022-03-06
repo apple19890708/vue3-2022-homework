@@ -153,7 +153,7 @@
         ></StepProgessSlider>
       </div>
       <div class="col-md-6">
-        <Form ref="testName" v-slot="{ errors }" @submit="validates">
+        <Form ref="orderForm" v-slot="{ errors }" @submit="validates">
           <template v-if="currentPage == 1">
             <div class="mb-3 text-start">
               <label for="email" class="form-label">Email</label>
@@ -183,6 +183,8 @@
               ></Field>
               <ErrorMessage name="name" class="invalid-feedback"></ErrorMessage>
             </div>
+          </template>
+          <template v-if="currentPage == 2">
             <div class="mb-3 text-start">
               <label for="phone" class="form-label">收件人電話</label>
               <Field
@@ -200,6 +202,8 @@
                 class="invalid-feedback"
               ></ErrorMessage>
             </div>
+          </template>
+          <template v-if="currentPage == 3">
             <div class="mb-3 text-start">
               <label for="address" class="form-label">收件人地址</label>
               <Field
@@ -218,40 +222,6 @@
               ></ErrorMessage>
             </div>
           </template>
-          <template v-if="currentPage == 2">
-            <div class="mb-3 text-start">
-              <label for="message" class="form-label">message</label>
-              <Field
-                id="message"
-                name="message"
-                type="message"
-                placeholder="請輸入message"
-                class="form-control"
-                :class="{ 'is-invalid': errors['message'] }"
-                :rules="{ required: true }"
-                v-model="form.message"
-              />
-              <flat-pickr v-model="date">
-              </flat-pickr>
-              <ErrorMessage class="invalid-feedback" name="message" />
-            </div>
-          </template>
-          <template v-if="currentPage == 3">
-            <div class="mb-3 text-start">
-              <label for="cat" class="form-label">cat</label>
-              <Field
-                id="cat"
-                name="cat"
-                type="cat"
-                placeholder="請輸入cat"
-                class="form-control"
-                :class="{ 'is-invalid': errors['cat'] }"
-                :rules="{ required: true }"
-                v-model="form.cat"
-              />
-              <ErrorMessage class="invalid-feedback" name="cat" />
-            </div>
-          </template>
           <button
             class="btn btn-primary"
             v-if="currentPage !== 1"
@@ -268,24 +238,43 @@
           >
             Submit
           </button>
-          <button
-            class="btn btn-primary"
-            v-if="currentPage !== 3"
-            type="submit"
-          >
+          <button class="btn btn-primary" v-if="currentPage < 3" type="submit">
             下一頁
           </button>
         </Form>
       </div>
     </div>
+    <Teleport to="body">
+      <ProductShowDialog
+        ref="productModal"
+        :temp-product="tempProduct"
+        @add-to-cart="
+          (id, qty) => {
+            addToCart(id, qty);
+          }
+        "
+      >
+      </ProductShowDialog>
+    </Teleport>
   </div>
 </template>
 
 <style lang="scss">
+table {
+  tbody {
+    tr {
+      &:last-child td {
+        border-bottom: none;
+        margin-bottom: 0px;
+      }
+    }
+  }
+}
 </style>
 
 <script>
 import StepProgessSlider from "../components/StepProgessSlider.vue";
+import ProductShowDialog from "../components/ProductShowDialog.vue";
 
 export default {
   name: "Cart",
@@ -298,8 +287,6 @@ export default {
           tel: "",
           address: "",
         },
-        message: "",
-        cat: "",
       },
       selectedVal: "",
       date: "",
@@ -310,12 +297,27 @@ export default {
       loadingStatus: {
         loadingItem: "",
       },
+      tempProduct: {},
     };
   },
   components: {
     StepProgessSlider,
+    ProductShowDialog,
   },
   methods: {
+    openProductModal(id) {
+      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/product/${id}`;
+      this.loadingStatus.loadingItem = id;
+      this.axios
+        .get(url)
+        .then((response) => {
+          this.tempProduct = response.data.product;
+          this.$refs.productModal.openModal();
+        })
+        .catch((err) => {
+          // alert(err.data.message);
+        });
+    },
     updateCart(data) {
       this.loadingStatus.loadingItem = data.id;
       const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/cart/${data.id}`;
@@ -336,18 +338,40 @@ export default {
         });
     },
     createOrder() {
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/order`;
+      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/order`; // 結帳
       const order = this.form;
-      this.$http
-        .post(url, { data: order })
-        .then((response) => {
-          alert(response.data.message);
-          this.$refs.form.resetForm();
-          this.getCart();
-        })
-        .catch((err) => {
-          alert(err.data.message);
-        });
+      if (this.cart.carts.length !== 0) {
+        this.$http
+          .post(url, { data: order })
+          .then((response) => {
+            alert(response.data.message);
+            this.$refs.orderForm.resetForm();
+            this.currentPage = 1;
+            this.form = {
+              user: {
+                name: "",
+                email: "",
+                tel: "",
+                address: "",
+              },
+            };
+            this.getCart();
+          })
+          .catch((err) => {
+            alert(err);
+          });
+      } else {
+        alert("尚未購買商品");
+        this.currentPage = 1;
+        this.form = {
+          user: {
+            name: "",
+            email: "",
+            tel: "",
+            address: "",
+          },
+        };
+      }
     },
     removeCartItem(id) {
       const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/cart/${id}`;
@@ -379,14 +403,10 @@ export default {
       this.currentPage -= 1;
     },
     async validates() {
-      console.log("1230");
       this.currentPage += 1;
     },
     onSubmit() {
       console.log("submit form");
-    },
-    changeCellSelect() {
-      console.log("123");
     },
     isPhone(value) {
       const phoneNumber = /^(09)[0-9]{8}$/;
@@ -402,6 +422,7 @@ export default {
         });
     },
     addToCart(id, qty = 1) {
+      console.log("id", id);
       const data = {
         product_id: id,
         qty,
@@ -414,6 +435,7 @@ export default {
         )
         .then((res) => {
           this.isLoadingItem = "";
+          this.$refs.productModal.closeModal();
           this.getCart();
         });
     },
@@ -424,7 +446,7 @@ export default {
         )
         .then((response) => {
           const cartData = response.data.data;
-          this.cart = response.data.data;
+          this.cart = JSON.parse(JSON.stringify(response.data.data));
           this.$store.dispatch("commonModule/getCarts", cartData);
         });
     },
