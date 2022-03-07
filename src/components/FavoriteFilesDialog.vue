@@ -133,39 +133,12 @@ export default {
     return {
       modal: "",
       createFolderModal: "",
-      folders: [
-        {
-          id: '123456789',
-          title: '收藏一',
-          productContents: [
-            {
-              category: "cake",
-              id: "-MtqJSsleIiRq1nN8hGF",
-              imageUrl: "https://images.unsplash.com/photo-1566121933407-3c7ccdd26763?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2073&q=80",
-              time: 1627833422,
-              title: "起司蛋糕"
-            }
-          ]
-        }
-      ],
-      copyFolders: [
-        {
-          id: '123456789',
-          title: '收藏一',
-          productContents: [
-            {
-              category: "cake",
-              id: "-MtqJSsleIiRq1nN8hGF",
-              imageUrl: "https://images.unsplash.com/photo-1566121933407-3c7ccdd26763?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2073&q=80",
-              time: 1627833422,
-              title: "起司蛋糕"
-            }
-          ]
-        }
-      ],
+      folders: [],
+      copyFolders: [],
       creatFolderForm: {
         title: '',
       },
+      createFolderInProduct: true,
     };
   },
   computed: {
@@ -180,16 +153,15 @@ export default {
         productContents: [],
         id: `${Math.floor(Date.now() / 1000)}`,
       };
-      // if (this.justCreateFolder === false) {
-      //   const Obj = {
-      //     title: this.sentJob.title,
-      //     company: this.sentJob.options.company.companyName,
-      //     id: this.sentJob.id,
-      //     imageUrl: this.sentJob.imageUrl,
-      //     time: this.sentJob.options.job.create,
-      //   };
-      //   newFolder.productContents.push(Obj);
-      // }
+      if (this.createFolderInProduct) {
+        const Obj = {
+          title: this.choiceFavoriteProduct.title,
+          category: this.choiceFavoriteProduct.category,
+          id: this.choiceFavoriteProduct.id,
+          imageUrl: this.choiceFavoriteProduct.imageUrl,
+        };
+        newFolder.productContents.push(Obj);
+      }
       this.copyFolders.push(newFolder);
       const folders = JSON.stringify(this.copyFolders);
       localStorage.setItem('favorite-folders', folders);
