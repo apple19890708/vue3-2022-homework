@@ -12,7 +12,6 @@ import VueFlatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 import AllRules from '@vee-validate/rules'; // v-validate所有規則
 import { localize, setLocale } from '@vee-validate/i18n'; // 導入多國語系
-import zhTW from '@vee-validate/i18n/dist/locale/zh_TW.json';
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -20,6 +19,7 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import zhTW from "./zh_TW.json";
 import App from './App.vue'
 import router from './router'
 import store from './store'

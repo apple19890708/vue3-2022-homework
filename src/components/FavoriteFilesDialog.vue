@@ -1,8 +1,8 @@
 <template>
   <div>
     <div
-      id="favoriteFilesDialog"
-      ref="modal"
+      id="favoriteFilesDialogs"
+      ref="favoriteFilesDialog"
       class="modal fade"
       tabindex="-1"
       aria-labelledby="favoriteFilesDialogLabel"
@@ -22,7 +22,7 @@
             ></button>
           </div>
           <div class="modal-body">
-            <div @click="addNewFolder" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal">
+            <div @click="addNewFolder">
               <font-awesome-icon :icon="['fa', 'plus']" class="plus" />
               新增資料夾
             </div>
@@ -39,6 +39,7 @@
     </div>
     <div
       class="modal fade"
+      ref="createFoldersModal"
       id="exampleModalToggle2"
       aria-hidden="true"
       aria-labelledby="exampleModalToggleLabel2"
@@ -57,15 +58,38 @@
           </div>
           <div class="modal-body">
             Hide this modal and show the first with the button below.
-          </div>
-          <div class="modal-footer">
-            <button
-              class="btn btn-primary"
-              data-bs-target="#favoriteFilesDialog"
-              data-bs-toggle="modal"
-            >
-              Back to first
+            <Form ref="creatFolderForm" v-slot="{ errors }" @submit="createFolder">
+            <!-- 表單1-1：公司名稱(必填) -->
+            <div class="form__inputBox">
+              <div class="form__labelBox">
+                <label for="collectForderName" class="form__label--custom form-label"
+                  >收藏夾名稱</label
+                >
+                <p class="formTag--must">必填</p>
+              </div>
+              <Field
+                id="collectForderName"
+                ref="collectForderName"
+                name="收藏夾名稱"
+                type="text"
+                class="form-control"
+                :class="{ 'is-invalid': errors['收藏夾名稱'] }"
+                placeholder="請輸入收藏夾名稱"
+                v-model="creatFolderForm.title"
+              ></Field>
+              <ErrorMessage name="收藏夾名稱" class="invalid-feedback"></ErrorMessage>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mb-3">
+              建立
             </button>
+            <button
+              class="btn btn-gray-light w-100"
+              @click="backFirst"
+              type="button"
+            >
+              返回
+            </button>
+          </Form>
           </div>
         </div>
       </div>
@@ -87,12 +111,11 @@
 </style>
 
 <script>
-import modal from '@/utils/modal';
+import Modal from 'bootstrap/js/dist/modal';
 import { mapGetters } from 'vuex';
 
 export default {
   name: "FavoriteFilesDialog",
-  mixins: [modal],
   props: {
     choiceFavoriteProduct: {
       type: Object,
@@ -108,7 +131,8 @@ export default {
   },
   data() {
     return {
-      favoriteFilesModal: "",
+      modal: "",
+      createFolderModal: "",
       folders: [
         {
           id: '123456789',
@@ -139,6 +163,9 @@ export default {
           ]
         }
       ],
+      creatFolderForm: {
+        title: '',
+      },
     };
   },
   computed: {
@@ -147,6 +174,46 @@ export default {
     ])
   },
   methods: {
+    createFolder() {
+      const newFolder = {
+        title: this.creatFolderForm.title || '未命名收藏夾',
+        productContents: [],
+        id: `${Math.floor(Date.now() / 1000)}`,
+      };
+      // if (this.justCreateFolder === false) {
+      //   const Obj = {
+      //     title: this.sentJob.title,
+      //     company: this.sentJob.options.company.companyName,
+      //     id: this.sentJob.id,
+      //     imageUrl: this.sentJob.imageUrl,
+      //     time: this.sentJob.options.job.create,
+      //   };
+      //   newFolder.productContents.push(Obj);
+      // }
+      this.copyFolders.push(newFolder);
+      const folders = JSON.stringify(this.copyFolders);
+      localStorage.setItem('favorite-folders', folders);
+      this.getLocalStorage();
+      this.closeModal();
+    },
+    backFirst() {
+      this.modal.show();
+      this.createFolderModal.hide();
+    },
+    addNewFolder() {
+      this.modal.hide();
+      this.creatFolderForm = {
+        title: '',
+      };
+      this.createFolderModal.show();
+    },
+    openModal() {
+      this.modal.show();
+    },
+    closeModal() {
+      this.modal.hide();
+      this.createFolderModal.hide();
+    },
     addToFolder(id, idx) {
       if (this.folders[idx].productCheck === false) {
         console.log('內無該筆資料，可新增')
@@ -166,6 +233,7 @@ export default {
       }
       const folders = JSON.stringify(this.copyFolders);
       localStorage.setItem('favorite-folders', folders);
+      this.modal.hide();
       this.getLocalStorage();
     },
     checkFavoriteFolder(id) { // 判斷folders內該項目是否已被保存
@@ -185,6 +253,12 @@ export default {
     },
   },
   mounted() {
+    this.modal = new Modal(this.$refs.favoriteFilesDialog);
+    this.createFolderModal = new Modal(this.$refs.createFoldersModal);
+  },
+  unmounted() {
+    this.modal.dispose();
+    this.createFolderModal.dispose();
   },
   created() {
     this.getLocalStorage();
