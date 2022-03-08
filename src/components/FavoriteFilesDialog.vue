@@ -64,7 +64,7 @@
                 <label for="collectForderName" class="form__label--custom form-label"
                   >收藏夾名稱</label
                 >
-                <p class="formTag--must">必填</p>
+                <p class="formTag--must">必填*</p>
               </div>
               <Field
                 id="collectForderName"
