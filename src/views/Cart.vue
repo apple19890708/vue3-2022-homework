@@ -189,16 +189,16 @@
               <label for="phone" class="form-label">收件人電話</label>
               <Field
                 id="phone"
-                name="phone"
+                name="電話"
                 type="text"
                 class="form-control"
-                :class="{ 'is-invalid': errors['phone'] }"
+                :class="{ 'is-invalid': errors['電話'] }"
                 placeholder="請輸入電話"
                 :rules="isPhone"
                 v-model="form.user.tel"
               ></Field>
               <ErrorMessage
-                name="phone"
+                name="電話"
                 class="invalid-feedback"
               ></ErrorMessage>
             </div>
