@@ -208,16 +208,16 @@
               <label for="address" class="form-label">收件人地址</label>
               <Field
                 id="address"
-                name="address"
+                name="地址"
                 type="text"
                 class="form-control"
-                :class="{ 'is-invalid': errors['address'] }"
+                :class="{ 'is-invalid': errors['地址'] }"
                 placeholder="請輸入地址"
                 rules="required"
                 v-model="form.user.address"
               ></Field>
               <ErrorMessage
-                name="address"
+                name="地址"
                 class="invalid-feedback"
               ></ErrorMessage>
             </div>
