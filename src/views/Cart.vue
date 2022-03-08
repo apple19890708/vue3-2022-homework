@@ -159,15 +159,15 @@
               <label for="email" class="form-label">Email</label>
               <Field
                 id="email"
-                name="email"
+                name="信箱"
                 type="email"
-                placeholder="請輸入Email"
+                placeholder="請輸入信箱"
                 class="form-control"
-                :class="{ 'is-invalid': errors['email'] }"
+                :class="{ 'is-invalid': errors['信箱'] }"
                 :rules="{ required: true, email: true }"
                 v-model="form.user.email"
               />
-              <ErrorMessage class="invalid-feedback" name="email" />
+              <ErrorMessage class="invalid-feedback" name="信箱" />
             </div>
             <div class="mb-3 text-start">
               <label for="name" class="form-label">收件人姓名</label>
