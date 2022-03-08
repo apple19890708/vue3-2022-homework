@@ -173,15 +173,15 @@
               <label for="name" class="form-label">收件人姓名</label>
               <Field
                 id="name"
-                name="name"
+                name="姓名"
                 type="text"
                 class="form-control"
-                :class="{ 'is-invalid': errors['name'] }"
+                :class="{ 'is-invalid': errors['姓名'] }"
                 placeholder="請輸入姓名"
                 rules="required"
                 v-model="form.user.name"
               ></Field>
-              <ErrorMessage name="name" class="invalid-feedback"></ErrorMessage>
+              <ErrorMessage name="姓名" class="invalid-feedback"></ErrorMessage>
             </div>
           </template>
           <template v-if="currentPage == 2">
