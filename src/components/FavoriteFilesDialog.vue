@@ -59,7 +59,6 @@
           <div class="modal-body">
             Hide this modal and show the first with the button below.
             <Form ref="creatFolderForm" v-slot="{ errors }" @submit="createFolder">
-            <!-- 表單1-1：公司名稱(必填) -->
             <div class="form__inputBox">
               <div class="form__labelBox">
                 <label for="collectForderName" class="form__label--custom form-label"
