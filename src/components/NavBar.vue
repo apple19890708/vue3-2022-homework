@@ -43,18 +43,23 @@
 </style>
 
 <script>
+import { Logout } from '../api'
+
 export default {
   name: "NavBar",
   data() {
     return {};
   },
   methods: {
-    async Logout() {
-      const res = await this.axios.post(`${process.env.VUE_APP_API}/v2/logout`);
-      if (res.data.success) {
-        localStorage.setItem("session", JSON.stringify({ isLogin: false }));
-        this.$router.push("/admin-login");
-      }
+    Logout() {
+      Logout()
+        .then((res) => {
+          localStorage.setItem("session", JSON.stringify({ isLogin: false }));
+          this.$router.push("/admin-login");
+        })
+        .catch((err) => {
+
+        })
     },
   },
 };

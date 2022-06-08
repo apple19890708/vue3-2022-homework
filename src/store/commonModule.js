@@ -1,5 +1,6 @@
 import {
-  getProduct
+  getProduct,
+  getCart
 } from '../api';
 
 export default {
@@ -17,8 +18,11 @@ export default {
         commit('GET_PRODUCT', res)
       })
     },
-    getCarts({ commit }, payload) {
-      commit('GET_CARTS', payload)
+    getCart({ commit }) {
+      getCart()
+        .then((res) => {
+          commit('GET_CARTS', res.data)
+        })
     }
   },
   mutations: {
@@ -31,16 +35,17 @@ export default {
     SAVE_FAVORIE_FOLDERS(state, payload) {
       state.favoriteFoders = payload
     },
-    SAVE_TOAST_MESSAGE(state, { response, status = '更新' }) {
-      if (response.data.success) {
+    SAVE_TOAST_MESSAGE(state, { res, status = '更新' }) {
+      console.log('res', res)
+      if (res.success) {
         state.toastMessage = {
           style: 'success',
           title: `${status}成功`,
         }
       } else {
         // 有些訊息是字串，有些則是陣列，在此統一格式
-        const message = typeof response.data.message === 'string'
-          ? [response.data.message] : response.data.message;
+        const message = typeof res.data.message === 'string'
+          ? [res.data.message] : res.data.message;
         state.toastMessage = {
           style: 'danger',
           title: `${status}失敗`,

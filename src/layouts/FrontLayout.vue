@@ -38,11 +38,20 @@ export default {
       }
       this.showNavbar = window.pageYOffset < this.lastScrollPosition // 當前位置 小於 最後捲動改變位置時為 false，隱藏 navbar
       this.lastScrollPosition = window.pageYOffset
-    }
+    },
+    getLocalStorage() {
+      const favoriteFolders = JSON.parse(localStorage.getItem('favorite-folders'));
+      if (favoriteFolders) {
+        this.folders = favoriteFolders;
+        this.copyFolders = JSON.parse(JSON.stringify(favoriteFolders));
+      }
+      this.$store.commit('commonModule/SAVE_FAVORIE_FOLDERS', JSON.parse(JSON.stringify(favoriteFolders)));
+    },
   },
   mounted() {
     this.lastScrollPosition = window.pageYOffset
     window.addEventListener('scroll', this.onScroll)
+    this.getLocalStorage()
   },
   beforeUnmount() {
     window.removeEventListener('scroll', this.onScroll)

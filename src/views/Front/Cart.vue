@@ -1,8 +1,16 @@
 <template>
   <div class="Cart">
-    <div class="card" style="padding: 15px">
-      <h2>購物車</h2>
-      <table class="table align-middle">
+    <div style="padding: 15px">
+      <h2>購買商品</h2>
+      <div class="mt-5 row align-items-center flex-column">
+        <div class="col-md-6">
+          <StepProgessSlider
+            :length="4"
+            :current-page="currentPage"
+          ></StepProgessSlider>
+        </div>
+      </div>
+      <!-- <table class="table align-middle">
         <thead>
           <tr>
             <th>圖片</th>
@@ -60,99 +68,20 @@
             </td>
           </tr>
         </tbody>
-      </table>
+      </table> -->
     </div>
-    <div class="text-end" style="padding: 15px">
-      <button
-        class="btn btn-outline-danger"
-        type="button"
-        @click="deleteAllCarts"
-      >
-        清空購物車
-      </button>
-    </div>
-    <div style="padding: 15px">
-      <table class="table align-middle">
-        <thead>
-          <tr>
-            <th></th>
-            <th>品名</th>
-            <th style="width: 150px">數量/單位</th>
-            <th>單價</th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-if="cart.carts">
-            <tr v-for="item in cart.carts" :key="item.id">
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  @click="removeCartItem(item.id)"
-                  :disabled="loadingStatus.loadingItem === item.id"
-                >
-                  <i
-                    class="fas fa-spinner fa-pulse"
-                    v-if="loadingStatus.loadingItem === item.id"
-                  ></i>
-                  x
-                </button>
-              </td>
-              <td>
-                {{ item.product.title }}
-                <div class="text-success" v-if="item.coupon">已套用優惠券</div>
-              </td>
-              <td>
-                <div class="input-group input-group-sm">
-                  <div class="input-group mb-3">
-                    <input
-                      v-model.number="item.qty"
-                      @blur="updateCart(item)"
-                      :disabled="loadingStatus.loadingItem === item.id"
-                      min="1"
-                      type="number"
-                      class="form-control"
-                    />
-                    <span class="input-group-text" id="basic-addon2">{{
-                      item.product.unit
-                    }}</span>
-                  </div>
-                </div>
-              </td>
-              <td class="text-end">
-                <small
-                  v-if="cart.final_total !== cart.total"
-                  class="text-success"
-                  >折扣價：</small
-                >
-                {{ item.final_total }}
-              </td>
-            </tr>
-          </template>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="3" class="text-end">總計</td>
-            <td class="text-end">{{ cart.total }}</td>
-          </tr>
-          <tr v-if="cart.final_total !== cart.total">
-            <td colspan="3" class="text-end text-success">折扣價</td>
-            <td class="text-end text-success">{{ cart.final_total }}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+  <router-view/>
   </div>
   <div class="container">
     <div class="mt-4"></div>
     <div class="mt-5 row align-items-center flex-column">
-      <div class="col-md-6">
+      <!-- <div class="col-md-6">
         <StepProgessSlider
           :length="3"
           :current-page="currentPage"
         ></StepProgessSlider>
-      </div>
-      <div class="col-md-6">
+      </div> -->
+      <!-- <div class="col-md-6">
         <Form ref="orderForm" v-slot="{ errors }" @submit="validates">
           <template v-if="currentPage == 1">
             <div class="mb-3 text-start">
@@ -242,9 +171,9 @@
             下一頁
           </button>
         </Form>
-      </div>
+      </div> -->
     </div>
-    <Teleport to="body">
+    <!-- <Teleport to="body">
       <ProductShowDialog
         ref="productModal"
         :temp-product="tempProduct"
@@ -255,7 +184,7 @@
         "
       >
       </ProductShowDialog>
-    </Teleport>
+    </Teleport> -->
   </div>
 </template>
 
@@ -273,24 +202,17 @@ table {
 </style>
 
 <script>
-import StepProgessSlider from "../components/StepProgessSlider.vue";
-import ProductShowDialog from "../components/ProductShowDialog.vue";
+import { mapGetters } from 'vuex'
+import StepProgessSlider from "../../components/StepProgessSlider.vue";
+import ProductShowDialog from "../../components/ProductShowDialog.vue";
 
 export default {
   name: "Cart",
   data() {
     return {
-      form: {
-        user: {
-          name: "",
-          email: "",
-          tel: "",
-          address: "",
-        },
-      },
       selectedVal: "",
       date: "",
-      currentPage: 1,
+      currentPage: this.$route.query.currentPage || 1,
       products: [],
       isLoadingItem: "",
       cart: [],
@@ -302,7 +224,25 @@ export default {
   },
   components: {
     StepProgessSlider,
-    ProductShowDialog,
+  },
+  computed: {
+    ...mapGetters("commonModule", [
+      "carts"
+    ]),
+  },
+  watch: {
+    carts() {
+      this.cart = JSON.parse(JSON.stringify(this.carts));
+    },
+  },
+  beforeRouteUpdate(to, from, next) {
+    if (to.query.currentPage) {
+      this.currentPage = to.query.currentPage;
+    } else {
+      this.currentPage = 1;
+    }
+
+    next();
   },
   methods: {
     openProductModal(id) {
@@ -318,25 +258,24 @@ export default {
           // alert(err.data.message);
         });
     },
-    updateCart(data) {
-      this.loadingStatus.loadingItem = data.id;
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/cart/${data.id}`;
-      const cart = {
-        product_id: data.product_id,
-        qty: data.qty,
-      };
-      this.$http
-        .put(url, { data: cart })
-        .then((response) => {
-          alert(response.data.message);
-          this.loadingStatus.loadingItem = "";
-          this.getCart();
-        })
-        .catch((err) => {
-          alert(err.data.message);
-          this.loadingStatus.loadingItem = "";
-        });
-    },
+    // async updateCart(data) {
+    //   try {
+    //     this.loadingStatus.loadingItem = data.id;
+    //     const cart = {
+    //       product_id: data.product_id,
+    //       qty: data.qty,
+    //     };
+    //     const res = await updateCartItem({ data: cart }, data.id)
+    //     if (res) {
+    //       alert(res.message);
+    //       this.loadingStatus.loadingItem = "";
+    //       this.getCart();
+    //     }
+    //   } catch (err) {
+    //     console.log(err)
+    //     this.loadingStatus.loadingItem = "";
+    //   }
+    // },
     createOrder() {
       const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/order`; // 結帳
       const order = this.form;
@@ -373,32 +312,27 @@ export default {
         };
       }
     },
-    removeCartItem(id) {
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/cart/${id}`;
-      this.loadingStatus.loadingItem = id;
-      this.$http
-        .delete(url)
-        .then((response) => {
-          alert(response.data.message);
-          this.loadingStatus.loadingItem = "";
-          this.getCart();
-        })
-        .catch((err) => {
-          alert(err.data.message);
-        });
-    },
-    deleteAllCarts() {
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/carts`;
-      this.$http
-        .delete(url)
-        .then((response) => {
-          alert(response.data.message);
-          this.getCart();
-        })
-        .catch((err) => {
-          alert(err.data.message);
-        });
-    },
+    // removeCartItem(id) {
+    //   deleteCartItem(id)
+    //     .then((res) => {
+    //       alert(res.message);
+    //       this.loadingStatus.loadingItem = "";
+    //       this.getCart();
+    //     })
+    //     .catch((err) => {
+    //       alert(err.data.message);
+    //     })
+    // },
+    // deleteAllCarts() {
+    //   deleteAllCarts()
+    //     .then((res) => {
+    //       alert(res.message);
+    //       this.getCart();
+    //     })
+    //     .catch((err) => {
+    //       console.log(err)
+    //     })
+    // },
     current() {
       this.currentPage -= 1;
     },
@@ -412,47 +346,38 @@ export default {
       const phoneNumber = /^(09)[0-9]{8}$/;
       return phoneNumber.test(value) ? true : "需要正確的電話號碼";
     },
-    getProducts() {
-      this.$http
-        .get(
-          `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/products/all`
-        )
-        .then((res) => {
-          this.products = res.data.products;
-        });
-    },
-    addToCart(id, qty = 1) {
-      console.log("id", id);
-      const data = {
-        product_id: id,
-        qty,
-      };
-      this.isLoadingItem = id;
-      this.$http
-        .post(
-          `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/cart`,
-          { data }
-        )
-        .then((res) => {
-          this.isLoadingItem = "";
-          this.$refs.productModal.closeModal();
-          this.getCart();
-        });
-    },
+    // getProducts() {
+    //   this.$http
+    //     .get(
+    //       `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/products/all`
+    //     )
+    //     .then((res) => {
+    //       this.products = res.data.products;
+    //     });
+    // },
+    // async addToCart(id, qty = 1) {
+    //   try {
+    //     const data = {
+    //       product_id: id,
+    //       qty,
+    //     };
+    //     this.isLoadingItem = id;
+    //     const res = await addToCart({ data });
+    //     if (res) {
+    //       this.isLoadingItem = "";
+    //       this.$refs.productModal.closeModal();
+    //       this.getCart();
+    //     }
+    //   } catch (err) {
+    //     console.log(err)
+    //   }
+    // },
     getCart() {
-      this.$http
-        .get(
-          `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/cart`
-        )
-        .then((response) => {
-          const cartData = response.data.data;
-          this.cart = JSON.parse(JSON.stringify(response.data.data));
-          this.$store.dispatch("commonModule/getCarts", cartData);
-        });
+      this.$store.dispatch('commonModule/getCart')
     },
   },
   mounted() {
-    this.getProducts();
+    // this.getProducts();
     this.getCart();
   },
 };

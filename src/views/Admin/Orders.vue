@@ -75,6 +75,11 @@
 import DelModal from '@/components/DelModal.vue';
 import OrderModal from '@/components/OrderModal.vue';
 import Pagenation from '@/components/Pagenation.vue';
+import {
+  getOrders,
+  delOrders,
+  updateOrders
+} from "../../api"
 
 export default {
   data() {
@@ -101,20 +106,22 @@ export default {
     },
   },
   methods: {
-    getOrders(currentPage = 1) {
+    async getOrders(currentPage = 1) {
       this.currentPage = currentPage;
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/orders?page=${currentPage}`;
       this.isLoading = true;
-      this.$http.get(url, this.tempProduct).then((response) => {
-        this.orders = response.data.orders;
-        this.pagination = response.data.pagination;
-        this.isLoading = false;
-      }).catch((error) => {
+      try {
+        const res = await getOrders(currentPage);
+        if (res.success) {
+          this.orders = res.orders;
+          this.pagination = res.pagination;
+          this.isLoading = false;
+        }
+      } catch (error) {
         this.isLoading = false;
         const status = '錯誤訊息';
         const errRes = error.response;
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { errRes, status })
-      });
+        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res: errRes, status })
+      }
     },
     openModal(item) {
       this.tempOrder = { ...item };
@@ -125,39 +132,44 @@ export default {
       this.tempOrder = { ...item };
       this.$refs.delModal.openModal();
     },
-    updatePaid(item) {
+    async updatePaid(item) {
       this.isLoading = true;
-      const api = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/order/${item.id}`;
       const paid = {
         is_paid: item.is_paid,
-      };
-      this.$http.put(api, { data: paid }).then((response) => {
-        const status = '更新付款狀態';
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { response, status })
-        this.isLoading = false;
-        this.$refs.orderModal.closeModal();
-        this.getOrders(this.currentPage);
-      }).catch((error) => {
-        console.log('error', error)
+      }
+      try {
+        const res = await updateOrders({ data: paid }, item.id);
+        if (res.success) {
+          const status = '更新付款狀態';
+          this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res, status })
+          this.isLoading = false;
+          this.$refs.orderModal.closeModal();
+          this.getOrders(this.currentPage);
+        }
+      } catch (error) {
         this.isLoading = false;
         const status = '更新付款狀態';
         const errRes = error.response;
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { errRes, status })
-      });
+        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res: errRes, status })
+      }
     },
-    delOrder() {
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/order/${this.tempOrder.id}`;
+    async delOrder() {
       this.isLoading = true;
-      this.$http.delete(url).then(() => {
-        this.isLoading = false;
-        this.$refs.delModal.closeModal();
-        this.getOrders(this.currentPage);
-      }).catch((error) => {
+      try {
+        const res = await delOrders(this.tempOrder.id);
+        const status = '刪除訂單';
+        if (res.success) {
+          this.isLoading = false;
+          this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res, status })
+          this.$refs.delModal.closeModal();
+          this.getOrders(this.currentPage);
+        }
+      } catch (error) {
         this.isLoading = false;
         const status = '錯誤訊息';
         const errRes = error.response;
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { errRes, status })
-      });
+        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res: errRes, status })
+      }
     },
   },
   created() {

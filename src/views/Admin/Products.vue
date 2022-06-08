@@ -47,10 +47,10 @@
                   <font-awesome-icon
                     v-if="n <= product.star"
                     :icon="['fas', 'star']"
+                    style="color: #fdf367"
                   />
                 </template>
               </span>
-              {{ product.star }}
             </td>
             <td width="120">
               <div class="btn-group">
@@ -122,7 +122,7 @@
                 <p class="card-text">商品描述：{{ tempProduct.description }}</p>
                 <p class="card-text">商品內容：{{ tempProduct.content }}</p>
                 <div class="d-flex">
-                  <p class="card-text me-2">{{ tempProduct.origin_price }}</p>
+                  <p class="card-text me-2">{{ tempProduct.price }}</p>
                   <p class="card-text text-secondary">
                     <del>{{ tempProduct.origin_price }}</del>
                   </p>
@@ -264,10 +264,10 @@ input:checked + .slider:before {
 
 <script>
 import { mapGetters } from "vuex";
-import ProductDialog from "../components/ProductDialog.vue";
-import DelProductModal from "../components/DelProductModal.vue";
-import { aepAxios } from "../api/aepBaseApi";
-import Pagenation from "../components/Pagenation.vue";
+import ProductDialog from "../../components/ProductDialog.vue";
+import DelProductModal from "../../components/DelProductModal.vue";
+import { aepAxios } from "../../api/aepBaseApi";
+import Pagenation from "../../components/Pagenation.vue";
 
 export default {
   name: "Products",
@@ -332,10 +332,7 @@ export default {
     async checkAdmin() {
       const api = `${process.env.VUE_APP_API}v2/api/user/check`; // 檢查使用者登入狀態
       try {
-        const res = await this.axios.post(api);
-        if (res.data.success) {
-          this.getProductsData();
-        }
+        this.getProductsData();
       } catch (err) {
         console.log(err);
         localStorage.setItem("session", JSON.stringify({ isLogin: false }));
@@ -427,14 +424,14 @@ export default {
     },
   },
   created() {
-    const token = document.cookie.replace(
-      // eslint-disable-next-line
-      /(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,
-      "$1"
-    );
-    this.axios.defaults.headers.common.Authorization = token; // 將token帶入header裡面
-    aepAxios.defaults.headers.common.Authorization = token; // 這是目前新版寫法
-    this.checkAdmin();
+    // const token = document.cookie.replace(
+    //   // eslint-disable-next-line
+    //   /(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,
+    //   "$1"
+    // );
+    // this.axios.defaults.headers.common.Authorization = token; // 將token帶入header裡面
+    // aepAxios.defaults.headers.common.Authorization = token; // 這是目前使用axios.create寫法
+    this.getProductsData();
   },
 };
 </script>

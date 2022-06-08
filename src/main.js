@@ -12,6 +12,7 @@ import VueFlatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 import AllRules from '@vee-validate/rules'; // v-validate所有規則
 import { localize, setLocale } from '@vee-validate/i18n'; // 導入多國語系
+import dayjs from 'dayjs'
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -19,10 +20,12 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { Swiper, SwiperSlide } from 'swiper/vue/swiper-vue';
 import zhTW from "./zh_TW.json";
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import 'swiper/swiper.scss';
 import { numberWithCommas } from './utils' // 引入千分位
 
 library.add(fab, fas, far)
@@ -41,6 +44,7 @@ setLocale('zh_TW');
 createApp(App)
   .mixin({
     methods: {
+      dayjs,
       numberWithCommas,
     },
   })
@@ -53,7 +57,8 @@ createApp(App)
   .component('ErrorMessage', ErrorMessage)
   .component('vue-select', VueNextSelect)
   .component('Loading', VueLoading)
+  .component('Swiper', Swiper)
+  .component('SwiperSlide', SwiperSlide)
   .use(VueFlatPickr)
   .use(VueLoading)
-  .use(VueAxios, axios)
   .mount('#app')

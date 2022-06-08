@@ -44,7 +44,6 @@
         </form>
       </div>
     </div>
-    <p class="mt-5 mb-3 text-muted">&copy; 2021~∞ - 六角學院</p>
   </div>
 </template>
 
@@ -69,6 +68,8 @@
 </style>
 
 <script>
+import { Login } from '../api'
+
 export default {
   name: "AdminLogin",
   data() {
@@ -85,23 +86,19 @@ export default {
   },
   methods: {
     async login() {
-      try {
-        const res = await this.axios.post(
-          `${process.env.VUE_APP_API}/v2/admin/signin`,
-          this.user
-        );
-        const { token, expired, success } = res.data;
-        if (success) {
-          document.cookie = `hexToken=${token};expires=${new Date(expired)};`; // 取得token存在cookie 並限定有效期限
-          localStorage.setItem("session", JSON.stringify({ isLogin: true }));
-          this.$router.push("/admin/products");
-        } else {
-          console.log("err", res.data);
-          if (res.data.error.code === "auth/user-not-found") {
+      const { user } = this;
+      Login(user)
+        .then((res) => {
+          const { token, expired, success } = res;
+          if (success) {
+            document.cookie = `hexToken=${token};expires=${new Date(expired)};`; // 取得token存在cookie 並限定有效期限
+            localStorage.setItem("session", JSON.stringify({ isLogin: true }));
+            this.$router.push("/admin/products");
+          } else if (res.error.code === "auth/user-not-found") {
             this.isUsernameError = true;
             this.user.username = '';
             this.user.password = '';
-          } else if (res.data.error.code === "auth/invalid-email") {
+          } else if (res.error.code === "auth/invalid-email") {
             this.isInvalidEmail = true;
             this.user.username = '';
             this.user.password = '';
@@ -109,10 +106,10 @@ export default {
             this.isPassword = true;
             this.user.password = '';
           }
-        }
-      } catch (err) {
-        console.log(err);
-      }
+        })
+        .catch((err) => {
+
+        })
     },
   },
   mounted() {},

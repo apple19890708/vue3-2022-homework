@@ -96,7 +96,7 @@
   </div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .folder {
     cursor: pointer;
     padding: 10px;

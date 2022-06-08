@@ -28,16 +28,29 @@
               height="196"
             ></div>
             <div class="card-body">
-              <h5 class="card-title">{{ product.title }}</h5>
-              <p class="card-text">
+              <h5 class="card-title text-start">{{ product.title }}</h5>
+              <p class="card-text text-start">
                 {{ product.description }}
               </p>
+            </div>
+            <div class="card-footer bg-transparent border-0 d-flex justify-content-between">
               <router-link
                 :to="`/front-product/${product.id}`"
                 class="btn btn-primary"
               >
                 看內容
               </router-link>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="addToCart(product.id)"
+                :disabled="isLoadingItem === product.id"
+              >
+                <span v-show="isLoadingItem === product.id">
+                  <font-awesome-icon icon="spinner" class="fa-spin" />
+                </span>
+                加到購物車
+              </button>
             </div>
           </div>
         </div>
@@ -69,7 +82,8 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import FavoriteFilesDialog from "../components/FavoriteFilesDialog.vue";
+import FavoriteFilesDialog from "../../components/FavoriteFilesDialog.vue";
+import { addToCart } from "../../api"
 
 export default {
   name: "FrontProducts",
@@ -80,6 +94,7 @@ export default {
     return {
       products: [],
       favoriteProduct: {},
+      isLoadingItem: "",
     };
   },
   computed: {
@@ -93,18 +108,39 @@ export default {
     },
   },
   methods: {
+    async addToCart(id, qty = 1) {
+      try {
+        const data = {
+          product_id: id,
+          qty,
+        };
+        this.isLoadingItem = id;
+        const res = await addToCart({ data });
+        if (res) {
+          this.isLoadingItem = "";
+          this.getCart();
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    getCart() {
+      this.$store.dispatch('commonModule/getCart')
+    },
     checkBookingProduct() { // 檢查商品是否已收藏在資料夾內
-      this.products.forEach((product, idx) => {
-        let isSaved = false;
-        this.favoriteFoders.forEach(((item) => {
-          item.productContents.forEach((content) => {
-            if (product.id === content.id) {
-              isSaved = true;
-            }
-          })
-        }))
-        this.products[idx].saved = isSaved;
-      })
+      if (this.favoriteFoders) {
+        this.products.forEach((product, idx) => {
+          let isSaved = false;
+          this.favoriteFoders.forEach(((item) => {
+            item.productContents.forEach((content) => {
+              if (product.id === content.id) {
+                isSaved = true;
+              }
+            })
+          }))
+          this.products[idx].saved = isSaved;
+        })
+      }
     },
     saveFavoriteProduct(product) {
       this.favoriteProduct = product;

@@ -30,8 +30,11 @@
           <div class="mb-3">
             <label for="price">折扣百分比</label>
             <input type="number" class="form-control" id="price"
-            min="0"
-                   v-model.number="tempCoupon.percent" placeholder="請輸入折扣百分比">
+              min="0"
+              max="100"
+              v-model.number="tempCoupon.percent"
+              placeholder="請輸入折扣百分比"
+            >
           </div>
           <div class="mb-3">
             <div class="form-check">
@@ -82,6 +85,7 @@ export default {
   watch: {
     coupon() {
       this.tempCoupon = this.coupon;
+      this.tempCoupon.is_enabled = 0;
       // 將時間格式改為 YYYY-MM-DD
       const dateAndTime = new Date(this.tempCoupon.due_date * 1000)
         .toISOString().split('T');

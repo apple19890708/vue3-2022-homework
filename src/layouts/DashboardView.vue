@@ -26,6 +26,10 @@
 <script>
 import ToastMessages from '@/components/ToastMessages.vue';
 import NavBar from "../components/NavBar.vue";
+import { aepAxios } from "../api/aepBaseApi";
+import {
+  checkAdmin
+} from '../api';
 
 export default {
   name: "DashboardView",
@@ -39,15 +43,14 @@ export default {
       /(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,
       "$1"
     );
-    this.$http.defaults.headers.common.Authorization = `${token}`;
-    const api = `${process.env.VUE_APP_API}v2/api/user/check`;
-    this.$http
-      .post(api)
-      .then((response) => {
-        console.log(response)
+    aepAxios.defaults.headers.common.Authorization = token;
+    checkAdmin()
+      .then((res) => {
       })
       .catch((error) => {
         this.$router.push("/");
+        localStorage.setItem("session", JSON.stringify({ isLogin: false }));
+        this.$router.push("/admin-login");
       });
   },
 };

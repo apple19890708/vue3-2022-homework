@@ -4,15 +4,24 @@
       <ul class="progressbar">
         <li
           :class="{ active: currentPage >= i }"
-          v-for="i in length"
+          v-for="(i, idx) in length"
           :key="i"
-        ></li>
+        >
+        <span v-if="idx === 0" :class="{ activeText: currentPage >= i }">商品確認</span>
+        <span v-if="idx === 1" :class="{ activeText: currentPage >= i }">填寫資料</span>
+        <span v-if="idx === 2" :class="{ activeText: currentPage >= i }">訂單確認</span>
+        <span v-if="idx === 3" :class="{ activeText: currentPage >= i }">訂單完成</span>
+        </li>
       </ul>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
+.activeText {
+  font-weight: bold;
+  color: #3aac5d;
+}
 .container {
   width: 100%;
   // position: absolute;
@@ -85,10 +94,10 @@ export default {
   props: {
     length: {
       type: Number,
-      default: 3,
+      default: 4,
     },
     currentPage: {
-      type: Number,
+      type: [Number, String],
       default: 0,
     },
   },

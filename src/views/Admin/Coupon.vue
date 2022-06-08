@@ -47,6 +47,9 @@
 <script>
 import DelModal from '@/components/DelModal.vue';
 import CouponModal from '@/components/CouponModal.vue';
+import {
+  getCoupons, createCoupons, updateCoupons, deleteCoupons
+} from "../../api"
 
 export default {
   components: { CouponModal, DelModal },
@@ -91,60 +94,81 @@ export default {
       const delComponent = this.$refs.delModal;
       delComponent.openModal();
     },
-    getCoupons() {
+    async getCoupons() {
       this.isLoading = true;
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/coupons`;
-      this.$http.get(url, this.tempProduct).then((response) => {
-        this.coupons = response.data.coupons;
+      try {
+        const res = await getCoupons()
+        this.coupons = res.coupons;
         this.isLoading = false;
-      }).catch((error) => {
+      } catch (error) {
         this.isLoading = false;
         const status = '錯誤訊息';
         const errRes = error.response;
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { errRes, status })
-      });
+        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res: errRes, status })
+      }
     },
-    updateCoupon(tempCoupon) {
+    async updateCoupon(tempCoupon) {
       this.isLoading = true;
-      let url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/coupon`;
-      let httpMethos = 'post';
-      let data = tempCoupon;
-
+      const localTempCoupon = { ...tempCoupon }
+      if (tempCoupon.percent > 100) { // 折扣大於 100時，等於100
+        localTempCoupon.percent = 100
+      }
+      let data = localTempCoupon;
       if (!this.isNew) {
-        url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/coupon/${this.tempCoupon.id}`;
-        httpMethos = 'put';
         data = this.tempCoupon;
       }
-
-      this.$http[httpMethos](url, { data }).then((response) => {
-        this.isLoading = false;
-        const status = '新增優惠券';
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { response, status })
-        this.getCoupons();
-        this.$refs.couponModal.closeModal();
-      }).catch((error) => {
-        this.isLoading = false;
-        const status = '錯誤訊息';
-        const errRes = error.response;
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { errRes, status })
-      });
+      if (this.isNew) {
+        try {
+          this.isLoading = false;
+          const status = '新增優惠券';
+          const res = await createCoupons({ data })
+          if (res.success) {
+            this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res, status })
+            this.getCoupons();
+            this.$refs.couponModal.closeModal();
+          }
+        } catch (error) {
+          this.isLoading = false;
+          const status = '錯誤訊息';
+          const errRes = error.response;
+          this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res: errRes, status })
+        }
+      } else {
+        try {
+          this.isLoading = false;
+          const status = '修改優惠券';
+          const res = await updateCoupons({ data }, this.tempCoupon.id)
+          if (res.success) {
+            this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res, status })
+            this.getCoupons();
+            this.$refs.couponModal.closeModal();
+          }
+        } catch (error) {
+          this.isLoading = false;
+          const status = '錯誤訊息';
+          const errRes = error.response;
+          this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res: errRes, status })
+        }
+      }
     },
-    delCoupon() {
-      const url = `${process.env.VUE_APP_API}v2/api/${process.env.VUE_APP_PATH}/admin/coupon/${this.tempCoupon.id}`;
+    async delCoupon() {
       this.isLoading = true;
-      this.$http.delete(url).then((response) => {
-        this.isLoading = false;
-        const status = '刪除優惠券';
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { response, status })
-        const delComponent = this.$refs.delModal;
-        delComponent.closeModal();
-        this.getCoupons();
-      }).catch((error) => {
+      try {
+        const res = await deleteCoupons(this.tempCoupon.id)
+        if (res.success) {
+          this.isLoading = false;
+          const status = '刪除優惠券';
+          this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res, status })
+          const delComponent = this.$refs.delModal;
+          delComponent.closeModal();
+          this.getCoupons();
+        }
+      } catch (error) {
         this.isLoading = false;
         const status = '刪除優惠券';
         const errRes = error.response;
-        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { errRes, status })
-      });
+        this.$store.commit('commonModule/SAVE_TOAST_MESSAGE', { res: errRes, status })
+      }
     },
   },
   created() {

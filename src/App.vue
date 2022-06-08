@@ -7,6 +7,11 @@
 </template>
 
 <style lang="scss">
+@import './assets/stylesheet/all';
+
+body {
+  // overflow: auto!important;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

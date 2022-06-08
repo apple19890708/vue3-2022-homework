@@ -12,33 +12,76 @@ const routes = [
         component: () => import('../views/Home.vue'),
       },
       {
-        path: 'cart',
+        path: '/cart',
         name: 'Cart',
-        component: () => import('../views/Cart.vue'),
+        component: () => import('../views/Front/Cart.vue'),
+        children: [
+          {
+            path: '',
+            name: 'CartCheckProducts',
+            component: () => import('../views/Front/CartCheckProducts.vue'),
+          },
+          {
+            path: 'order',
+            name: 'Order',
+            component: () => import('../views/Front/Order.vue'),
+          },
+          {
+            path: 'payment/:id',
+            name: 'Payment',
+            component: () => import('../views/Front/Payment.vue'),
+          },
+          {
+            path: 'cart-paid',
+            name: 'CartPaid',
+            component: () => import('../views/Front/CartPaid.vue'),
+          },
+        ]
       },
       {
         path: 'front-products',
         name: 'FrontProducts',
-        component: () => import('../views/FrontProducts.vue'),
+        component: () => import('../views/Front/FrontProducts.vue'),
       },
       {
         path: 'front-product/:id?',
         name: 'FrontProduct',
-        component: () => import('../views/FrontProduct.vue'),
+        component: () => import('../views/Front/FrontProduct.vue'),
+      },
+      {
+        path: 'search-order',
+        name: 'SearchOrder',
+        component: () => import('../views/Front/SearchOrder.vue'),
+      },
+      {
+        path: 'search-single-order/:id?',
+        name: 'SearchSingleOrder',
+        component: () => import('../views/Front/SearchSingleOrder.vue'),
+      },
+      {
+        path: '/favorites',
+        name: 'Favorites',
+        component: () => import('../views/Front/Favorites.vue'),
+      },
+      {
+        path: '/folder/:id',
+        name: 'FavoritesFolder',
+        component: () => import('../views/Front/FavoritesFolder.vue'),
+      },
+      {
+        path: 'about',
+        name: 'About',
+        component: () => import('../views/Front/About.vue'),
       },
     ]
   },
 
   {
-    path: '/about',
-    name: 'About',
-    component: () => import('../views/About.vue'),
-  },
-  {
     path: '/admin-login',
     name: 'AdminLogin',
     component: () => import('../views/AdminLogin.vue'),
   },
+
   // 後台畫面
   {
     path: '/admin',
@@ -50,21 +93,21 @@ const routes = [
         name: 'Products',
         default: true,
         meta: { requiresAuth: true },
-        component: () => import('../views/Products.vue'),
+        component: () => import('../views/Admin/Products.vue'),
       },
       {
         path: 'coupon',
         name: 'Coupon',
         default: true,
         meta: { requiresAuth: true },
-        component: () => import('../views/Coupon.vue'),
+        component: () => import('../views/Admin/Coupon.vue'),
       },
       {
         path: 'orders',
         name: 'Orders',
         default: true,
         meta: { requiresAuth: true },
-        component: () => import('../views/Orders.vue'),
+        component: () => import('../views/Admin/Orders.vue'),
       },
     ],
   },
