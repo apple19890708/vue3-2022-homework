@@ -1,0 +1,1 @@
+.container{display:flex;flex-direction:column;height:100vh;justify-content:center}.isError{color:red}.isErrorBorder{border-color:#f70808}.isErrorBorder:focus{border-color:#f70808;box-shadow:0 0 0 .25rem red}
